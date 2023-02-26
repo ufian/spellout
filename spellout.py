@@ -10,11 +10,11 @@ MAX_NUMBER = 10**12 - 1
 
 CHUNK_SIZE = 3
 MIN_CHUNK_NUMBER = 0
-MAX_CHUNK_NUMBER = 10 ** CHUNK_SIZE - 1
+MAX_CHUNK_NUMBER = 10**CHUNK_SIZE - 1
 
 CHUNK_NAMES = [
     '', # 10**0
-    'thousand' , # 10**3
+    'thousand', # 10**3
     'million', # 10**6
     'billion', # 10**9
 ]
@@ -67,7 +67,7 @@ def _split_for_chunks(number: int) -> Iterable[int]:
     
     while number > 0:
         yield number % 10**CHUNK_SIZE
-        number = number // 10 ** CHUNK_SIZE
+        number = number // 10**CHUNK_SIZE
 
 def _spellout_two_digits(number: int) -> str:
     """
@@ -135,4 +135,4 @@ def spellout(number: int) -> str:
     parts = chain.from_iterable(reversed(list(reversed_chunks_with_names)))
     
     # filter empty tokens or return zero, if all tokens were empty
-    return ' '.join(filter(None, parts)) or CONSTANTS[0]
+    return ' '.join(filter(None, parts)) or _spellout_two_digits(0)
