@@ -6,8 +6,8 @@ from spellout import spellout as solution_spellout
 
 
 TEST_FUNCTIONS = [
-    #('chatgpt', chatgpt_spellout),
-    #('copilot', copilot_spellout),
+    ('chatgpt', chatgpt_spellout),
+    ('copilot', copilot_spellout),
     ('solution', solution_spellout)
 ]
 
@@ -79,6 +79,13 @@ def test_spellout_three_digits(name, spellout, input, expected):
     (10**9, 'one billion'),
 ])
 def test_spellout_large_numbers(name, spellout, input, expected):
+    _good_test(name, spellout, input, expected)
+
+@pytest.mark.parametrize('name,spellout', TEST_FUNCTIONS)
+@pytest.mark.parametrize('input,expected', [
+    (10**12 - 1, 'nine hundred ninety-nine billion nine hundred ninety-nine million nine hundred ninety-nine thousand nine hundred ninety-nine'),
+])
+def test_spellout_edge(name, spellout, input, expected):
     _good_test(name, spellout, input, expected)
 
 

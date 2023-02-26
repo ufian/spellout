@@ -2,6 +2,10 @@
 
 
 def spellout(number):
+    # Remark: the original code didn't check edge cases
+    if not 0 <= number <= 999_999_999_999:
+        raise ValueError("Number out of range")
+    
     if number < 0:
         return "minus " + spellout(-number)
     elif number < 20:
@@ -9,7 +13,8 @@ def spellout(number):
                 "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"][number]
     elif number < 100:
         return ["twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"][number // 10 - 2] + (
-            " " + spellout(number % 10) if number % 10 else "")
+            # Remark: the original code has " " as separator for 2 digits
+            "-" + spellout(number % 10) if number % 10 else "")
     elif number < 1000:
         return spellout(number // 100) + " hundred" + (
             " " + spellout(number % 100) if number % 100 else "")
