@@ -2,16 +2,22 @@
 
 __author__ = 'ufian'
 
-from typing import Any, Iterable, Tuple
+from typing import Iterable
 from itertools import chain
 
 MIN_NUMBER = 0
 MAX_NUMBER = 10**12 - 1
 
-GROUP_SIZE = 3
-MIN_GROUP_NUMBER = 0
-MAX_GROUP_NUMBER = 10**GROUP_SIZE - 1
+CHUNK_SIZE = 3
+MIN_CHUNK_NUMBER = 0
+MAX_CHUNK_NUMBER = 10 ** CHUNK_SIZE - 1
 
+CHUNK_NAMES = [
+    '', # 10**0
+    'thousand' , # 10**3
+    'million', # 10**6
+    'billion', # 10**9
+]
 
 HUNDRED = 100
 
@@ -47,13 +53,6 @@ CONSTANTS = {
     100: 'hundred',
 }
 
-GROUP_NAMES = [
-    '', # 10**0
-    'thousand' , # 10**3
-    'million', # 10**6
-    'billion', # 10**9
-]
-
 
 def _split_for_chunks(number: int) -> Iterable[int]:
     """
@@ -67,8 +66,8 @@ def _split_for_chunks(number: int) -> Iterable[int]:
         return
     
     while number > 0:
-        yield number % 10**GROUP_SIZE
-        number = number // 10**GROUP_SIZE
+        yield number % 10**CHUNK_SIZE
+        number = number // 10 ** CHUNK_SIZE
 
 def _spellout_two_digits(number: int) -> str:
     """
@@ -93,14 +92,11 @@ def _spellout_hundreds(number_hundreds: int) -> str:
         return ''
     
     return f'{CONSTANTS[number_hundreds]} {CONSTANTS[HUNDRED]}'
-def _spellout_group(number: int) -> str:
-    if number < MIN_GROUP_NUMBER or number > MAX_GROUP_NUMBER:
-        raise ValueError(f'Number must be between {MIN_GROUP_NUMBER} and {MAX_GROUP_NUMBER}')
-    
-    # empty group
-    if number == 0:
-        return ''
 
+def _spellout_chunk(number: int) -> str:
+    if number < MIN_CHUNK_NUMBER or number > MAX_CHUNK_NUMBER:
+        raise ValueError(f'Chunk must be between {MIN_CHUNK_NUMBER} and {MAX_CHUNK_NUMBER}')
+    
     hundreds = number // HUNDRED
     two_digits = number % HUNDRED
     
@@ -112,7 +108,7 @@ def _spellout_group(number: int) -> str:
         _spellout_two_digits(two_digits)
     ]
     
-    return ' '.join(filter(lambda part: part != '', parts))
+    return ' '.join(filter(None, parts))
 
 def spellout(number: int) -> str:
     """
@@ -121,19 +117,22 @@ def spellout(number: int) -> str:
     if number < MIN_NUMBER or number > MAX_NUMBER:
         raise ValueError(f'Number must be between {MIN_NUMBER} and {MAX_NUMBER}')
     
-    # Edge case for zero
-    if number == 0:
-        return CONSTANTS[0]
+    # Step 2: Split number into chunks of thousands in reverse order
+    reversed_chunks = _split_for_chunks(number)
     
-    # zip for thousands chunks in reverse order and group names
-    # Step 3 contains here
-    reversed_groups = [
-        (_spellout_group(group), group_name)
-        for group, group_name in zip(_split_for_chunks(number), GROUP_NAMES)
-        # filter empty groups
-        if group != 0
-    ]
+    # Step 3 map chunks to chunk names
+    reversed_chunks_with_names = zip(reversed_chunks, CHUNK_NAMES)
+    
+    # filter empty chunks
+    non_empty_lambda = lambda pair: pair[0] != 0
+    reversed_chunks_with_names = filter(non_empty_lambda, reversed_chunks_with_names)
+
+    # spell out chunks
+    spellout_lambda = lambda pair: (_spellout_chunk(pair[0]), pair[1])
+    reversed_chunks_with_names = map(spellout_lambda, reversed_chunks_with_names)
     
     # Reverse to have correct order for output
-    parts = chain.from_iterable(reversed(reversed_groups))
-    return ' '.join(filter(None, parts))
+    parts = chain.from_iterable(reversed(list(reversed_chunks_with_names)))
+    
+    # filter empty tokens or return zero, if all tokens were empty
+    return ' '.join(filter(None, parts)) or CONSTANTS[0]
